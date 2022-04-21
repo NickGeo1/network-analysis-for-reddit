@@ -1,4 +1,4 @@
-# reddit_network_analysis
+# network-analysis-for-reddit
 
 ### Authentification
 OAuth according to praw best practices using praw.ini file in local config directory
