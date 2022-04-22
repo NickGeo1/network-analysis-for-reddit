@@ -1,5 +1,9 @@
 # network-analysis-for-reddit
 
-This is a project from Students of the University of Oulu for the Course Introduction to Social Network Analysis.
-This project is made by Nick, Arda and Martin
 
+### Authentification
+OAuth according to praw best practices using praw.ini file in local config directory
+(https://praw.readthedocs.io/en/stable/getting_started/authentication.html#password-flow)
+
+prawn.ini template:
+https://praw.readthedocs.io/en/stable/getting_started/configuration/prawini.html#praw-ini
