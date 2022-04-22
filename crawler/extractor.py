@@ -3,7 +3,11 @@ import praw
 from praw.models import MoreComments
 
 #use praw.ini file to initialize reddit object
-reddit = praw.Reddit("bot1", user_agent="bot1 user agent")
+#reddit = praw.Reddit("bot1", user_agent="bot1 user agent")
+reddit = praw.Reddit(
+    client_id="_Z-UctTbLwJV10tOmCuMng",
+    client_secret="-pvmI9ANIJxLXUA8Ue3t_Hq2GvvlUw",
+    user_agent="bot1")
 
 #testing that it is the correct user
 print(f"current user: {reddit.user.me()}")
@@ -14,8 +18,8 @@ submission = reddit.submission(url=url)
 
 posts = []
 for top_level_comment in submission.comments[1:]:
-    if isinstance(top_level_comment, MoreComments):
-        continue
+    #if isinstance(top_level_comment, MoreComments):
+        #continue
     posts.append(top_level_comment.body)
 posts = pd.DataFrame(posts,columns=["body"])
 print(posts)
