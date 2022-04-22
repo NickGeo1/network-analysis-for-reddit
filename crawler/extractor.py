@@ -15,16 +15,24 @@ submission = reddit.submission(url=url)
 
 from praw.models import MoreComments
 
-for top_level_comment in submission.comments:
-    if isinstance(top_level_comment, MoreComments):
-        continue
-    print(top_level_comment.body)
-
-# posts = []
-# for top_level_comment in submission.comments[1:]:
+# for top_level_comment in submission.comments:
 #     if isinstance(top_level_comment, MoreComments):
 #         continue
-#     posts.append(top_level_comment.body)
-# posts = pd.DataFrame(posts,columns=["body"])
-# print(posts)
+#     print(top_level_comment.author.name)
+#
+
+
+authors = []
+posts = []
+comments = []
+
+for top_level_comment in submission.comments[1:]:
+    if isinstance(top_level_comment, MoreComments):
+        continue
+    authors.append(top_level_comment.author)
+    comments.append(top_level_comment.body)
+    
+
+commentsDF = pd.DataFrame(comments, columns=["body"])
+print(commentsDF)
 
