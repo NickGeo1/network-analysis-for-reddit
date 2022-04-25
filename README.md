@@ -8,7 +8,7 @@ OAuth according to praw best practices using praw.ini file in local config direc
 prawn.ini template:
 https://praw.readthedocs.io/en/stable/getting_started/configuration/prawini.html#praw-ini
 
-###Extraction
+### Extraction
 extraction of comments and sub-comments guide:
 https://praw.readthedocs.io/en/stable/tutorials/comments.html
 
