@@ -10,7 +10,8 @@ print(f"current user: {reddit.user.me()}")
 
 # reddit url
 # url = "https://www.reddit.com/r/UpliftingNews/comments/lemy1b/student_who_made_30k_from_gamestop_donates_games/"
-url = "https://www.reddit.com/r/wallstreetbets/comments/l6ea1b/what_are_your_moves_tomorrow_january_28_2021/"
+#url = "https://www.reddit.com/r/wallstreetbets/comments/l6ea1b/what_are_your_moves_tomorrow_january_28_2021/"
+url = "https://www.reddit.com/r/wallstreetbets/comments/u6khwq/so_i_just_quit_my_job_because_i_cant_take_the/"
 submission = reddit.submission(url=url)
 
 authors = []
@@ -27,7 +28,7 @@ authorsLevelTwo = []
 #     authorsLevelOne.append(top_level_comment.author)
 
 # extracting first and second level comments
-submission.comments.replace_more(limit=None, threshold=0)
+submission.comments.replace_more(limit=None)
 for top_level_comment in submission.comments:
     # if isinstance(top_level_comment, MoreComments):
     #     continue
