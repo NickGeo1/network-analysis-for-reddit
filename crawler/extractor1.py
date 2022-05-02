@@ -1,23 +1,17 @@
-import pandas as pd
 import praw
-from praw.models import MoreComments
 from datetime import datetime
 import networkx as nx
 import matplotlib.pyplot as plt
 
-#use praw.ini file to initialize reddit object
-#reddit = praw.Reddit("bot1", user_agent="bot1 user agent")
-reddit = praw.Reddit(
-    client_id="_Z-UctTbLwJV10tOmCuMng",
-    client_secret="-pvmI9ANIJxLXUA8Ue3t_Hq2GvvlUw",
-    user_agent="bot1")
+# use praw.ini file to initialize reddit object
+reddit = praw.Reddit("bot1", user_agent="bot1 user agent")
 
-#testing that it is the correct user
+# testing that it is the correct user
 print(f"current user: {reddit.user.me()}")
 
-#reddit url
-#url = "https://www.reddit.com/r/UpliftingNews/comments/lemy1b/student_who_made_30k_from_gamestop_donates_games/"
-#submission = reddit.submission(url=url)
+# reddit url
+# url = "https://www.reddit.com/r/UpliftingNews/comments/lemy1b/student_who_made_30k_from_gamestop_donates_games/"
+# submission = reddit.submission(url=url)
 
 '''
     table = []
@@ -41,45 +35,48 @@ print(f"current user: {reddit.user.me()}")
     print(reply)
 '''
 
-#Make all posts*subreddits amount of nodes in the graph. The node labels are the post owners and the colors differ among subbredits  
-def set_post_owners_nodes(Graph, subreddit_list, posts):
+
+# Make all posts*subreddits amount of nodes in the graph. The node labels are the post owners and the colors differ among subbredits
+def set_post_owners_nodes(graph, subreddit_list, posts):
     for subreddit, color in subreddit_list:
         for post in list(reddit.subreddit(subreddit).top("month"))[:posts]:
-            if post.author == None: #If post is deleted author = none
+            if post.author is None:  # If post is deleted author = none
                 continue
-            Graph.add_node(post.author.name) #add the post's author name as node
-            Graph.nodes[post.author.name]['created'] = datetime.fromtimestamp(post.created_utc) #set as attribute the post creation date
-            Graph.nodes[post.author.name]['color'] = color #set as attribute the given color
-    return Graph
+            graph.add_node(post.author.name) # add the post's author name as node
+            graph.nodes[post.author.name]['created'] = datetime.fromtimestamp(post.created_utc)  # set as attribute the post creation date
+            graph.nodes[post.author.name]['color'] = color  # set as attribute the given color
+    return graph
 
-def set_post_owners_edges(Graph, subreddit_list, posts = 20):
-    Graph = set_post_owners_nodes(Graph, subreddit_list, posts)
-    print(f"Post owners are {Graph.nodes}")
+
+def set_post_owners_edges(graph, subreddit_list, posts = 20):
+    graph = set_post_owners_nodes(graph, subreddit_list, posts)
+    print(f"Post owners are {graph.nodes}")
     for subreddit, color in subreddit_list:
-        post_list = list(reddit.subreddit(subreddit).top("month"))[:posts] #A list of the first "posts" ammount of posts of the "subreddit" subreddit
+        post_list = list(reddit.subreddit(subreddit).top("month"))[:posts]  # A list of the first "posts" ammount of posts of the "subreddit" subreddit
         for post in post_list:
-            post.comments.replace_more(limit=None) #replace all MoreComments objects with the actual comments
+            post.comments.replace_more(limit=None)  # replace all MoreComments objects with the actual comments
             for top_level_comment in post.comments:
-                if top_level_comment.author == None: #If comment is deleted author = none
+                if top_level_comment.author is None:  # If comment is deleted author = none
                     continue
                 print(f"Post owner {post.author.name}. Comment owner {top_level_comment.author.name}")
-                if top_level_comment.author.name in Graph.nodes:
-                    #set directed edge that points from the user that has a post x and made a comment to post y, to the user of post y. Both x,y are in the same subreddit
-                    Graph.add_edge(top_level_comment.author.name , post.author.name)
-                    #set as attribute of this edge, the time of that comment
-                    Graph[top_level_comment.author.name][post.author.name]['time'] = datetime.fromtimestamp(top_level_comment.created_utc)
-    return Graph
+                if top_level_comment.author.name in graph.nodes:
+                    # set directed edge that points from the user that has a post x and made a comment to post y, to the user of post y. Both x,y are in the same subreddit
+                    graph.add_edge(top_level_comment.author.name, post.author.name)
+                    # set as attribute of this edge, the time of that comment
+                    graph[top_level_comment.author.name][post.author.name]['time'] = datetime.fromtimestamp(top_level_comment.created_utc)
+    return graph
 
-#Top 5 Growing communities at 24/4/2022
-#Color the nodes of each subreddit: red, blue, green, yellow, pink
+
+# Top 5 Growing communities at 24/4/2022
+# Color the nodes of each subreddit: red, blue, green, yellow, pink
 Graph = nx.DiGraph()
 subreddit_list = [("wallstreetbets","r"),("videos","b"),("tifu","g"), ("marvelstudios","y"),("Wellthatsucks","pink")] # 6-10 -> ["Weird","science","nottheonion","ChoosingBeggars","wow"]
-Graph = set_post_owners_edges(Graph, subreddit_list) 
+Graph = set_post_owners_edges(Graph, subreddit_list)
 
-node_colors = [Graph.nodes[v]['color'] for v in Graph.nodes] #list of node colors
-nx.write_gml(Graph, r'Graph.gml') #Save the graph in a file
-#G = nx.read_gml(r'Graph.gml') To load the graph
-nx.draw(Graph, with_labels=True, font_weight='bold', node_color = node_colors) #draw graph
+node_colors = [Graph.nodes[v]['color'] for v in Graph.nodes]  # list of node colors
+nx.write_gml(Graph, r'Graph.gml')  # Save the graph in a file
+# G = nx.read_gml(r'Graph.gml') To load the graph
+nx.draw(Graph, with_labels=True, font_weight='bold', node_color = node_colors)  # draw graph
 plt.show()
 
 
