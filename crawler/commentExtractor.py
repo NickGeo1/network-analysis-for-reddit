@@ -19,10 +19,10 @@ class STNode:
         self.node_list = []  # list contains STNode objects
         self.val = val
 
-    def get_name(self):
+    def get_name(self):  # helper method to extract comments from tree in edgeList.py
         return self.val
 
-    def get_replies(self):
+    def get_replies(self):  # helper method to extract comments from tree in edgeList.py
         return self.node_list
 
     def insert(self, node):
