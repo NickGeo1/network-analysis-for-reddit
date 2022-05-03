@@ -1,5 +1,4 @@
 import praw
-import pandas as pd
 
 # use praw.ini file to initialize reddit object
 reddit = praw.Reddit("bot1", user_agent="bot1 user agent")
@@ -60,7 +59,7 @@ def make_tree(comment):
 # creates a tree for every top level comment and appends it to forest list and returns forest list
 def make_forest(post):
     forest = []
-    counter = 20
+    counter = 2
     post.comments.replace_more(limit=None)  # replace all MoreComments objects with the actual comments
     for comment in post.comments:
         if counter < 1:
@@ -72,10 +71,10 @@ def make_forest(post):
     return forest
 
 
+# returns a list of the top level authors as String and their repliers as STNode objects in a list
+# return format of list: [ [author(String), [replies(STNode)] ]
 def run():
     result = []
     for tree in make_forest(submission):
         result.append(tree.preorder_output())
     return result
-# Main part: print all trees of the forest each tree divided by "-----" line in output
-# Make_forest(submission)
