@@ -13,8 +13,6 @@ print(f"current user: {reddit.user.me()}")
 url = "https://www.reddit.com/r/wallstreetbets/comments/l6ea1b/what_are_your_moves_tomorrow_january_28_2021/"
 submission = reddit.submission(url=url)
 
-from praw.models import MoreComments
-
 for top_level_comment in submission.comments:
     if isinstance(top_level_comment, MoreComments):
         continue

@@ -10,7 +10,7 @@ def add_edges(authorlist):
         lv0Replies = lv0[1]
         # graph.add_node(lv0Author)
         for replyAuthor in lv0Replies:  # for every direct reply of the comment
-            edgeList.append([lv0Author, replyAuthor.get_name()])
+            edgeList.append((replyAuthor.get_name(), lv0Author))
             add_edges([[replyAuthor.get_name(), replyAuthor.get_replies()]])  # recursive call of method to get replies
 
 
