@@ -1,5 +1,9 @@
 import networkx as nx
 import os
+import matplotlib.pyplot as plt
+import collections
+import numpy as np
+from scipy.optimize import curve_fit
 
 path = os.getcwd()
 
@@ -109,20 +113,56 @@ def average_betweennes_centrality(GF):
     return betweenness_sum / nx.number_of_nodes(GF)
 
 
-print("Graph metrics:")
+def print_top_n_degree_stats(GF, n):
+    outdegree = calculate_out_degree(GF, n)
+    indegree = calculate_in_degree(GF, n)
 
-outdegree = calculate_out_degree(G, 10)
-indegree = calculate_in_degree(G, 25)
+    outdegree = sort_list(outdegree, True)
+    indegree = sort_list(indegree, True)
 
-outdegree = sort_list(outdegree, True)
-indegree = sort_list(indegree, True)
+    print("\n-----Out-degree-----\n")
+    #for node in outdegree:
+        #print(node)
 
-print("\n-----Out-degree-----\n")
-for node in outdegree:
-    print(node)
 
-print("\n-----In-degree-----\n")
-for node in indegree:
-    print(node)
+    print("\n-----In-degree-----\n")
+    for node in indegree:
+        print(node)
+
+
+def func(x, a, b):
+    return a * (x ** -b)
+
+
+# returns a plot that shows the distribution of the list from param in logartihmic scale for log = True
+def is_power_law(GF, degree_list, log):
+    dist = {}
+    for item in degree_list:
+        degree = item[1]
+        if degree in dist:
+            dist[degree] += 1
+        else:
+            dist[degree] = 1
+    dist = collections.OrderedDict(sorted(dist.items()))
+    xdata, ydata = zip(*dist.items())
+    ydata = list(map(lambda x: x / nx.number_of_nodes(GF), ydata))
+
+    #popt, pcov = curve_fit(func, xdata, ydata)
+    #plt.plot(xdata, func(xdata, *popt))
+    plt.plot(xdata, ydata)
+    plt.xlabel("Degree")
+    plt.ylabel("Rel. Occurence")
+    if log:
+        plt.yscale("log")
+        plt.xscale("log")
+    plt.show()
+
+
+# scipy.optimize.curve_fit function with custom power_law function
+# nx.powerlaw_cluster_graph(n, m p)
+
+# print("Graph metrics:")
 # centrality_measures(G)
-global_properties(G)
+# global_properties(G)
+# print_top_n_degree_stats(G, 10)
+is_power_law(G, calculate_in_degree(G, 0), False)
