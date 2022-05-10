@@ -134,7 +134,9 @@ def func(x, a, b):
     return a * (x ** -b)
 
 
-# returns a plot that shows the distribution of the list from param in logartihmic scale for log = True
+# returns a plot that shows the distribution of the list from paramameter
+# degree_list needs to have lists as items, whereas the second item is relevant for plotting
+# in logartihmic scale: log = True
 def is_power_law(GF, degree_list, log):
     dist = {}
     for item in degree_list:
@@ -156,10 +158,9 @@ def is_power_law(GF, degree_list, log):
         plt.yscale("log")
         plt.xscale("log")
     plt.show()
+    # scipy.optimize.curve_fit function with custom power_law function
+    # nx.powerlaw_cluster_graph(n, m p)
 
-
-# scipy.optimize.curve_fit function with custom power_law function
-# nx.powerlaw_cluster_graph(n, m p)
 
 # print("Graph metrics:")
 # centrality_measures(G)
