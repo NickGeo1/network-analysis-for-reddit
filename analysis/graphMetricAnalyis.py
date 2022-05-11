@@ -18,8 +18,9 @@ A = nx.adjacency_matrix(G)
 def global_properties(GF):
     print('number of nodes: ', nx.number_of_nodes(GF))
     print('number of edges: ', nx.number_of_edges(GF))
-    # print('diameter', nx.diameter(GF))
+    # print('diameter', nx.diameter(nx.to_undirected(GF)))
     print('Average clustering coefficient: ', average_clustering_coefficient(G))
+    print('Average clustering coefficient: ', nx.average_clustering(G))
     print('Average degree centrality:', average_in_degree(G))  # For directed graph
     print('Average in degree centrality:', average_in_degree(G))  # For directed graph
     print('Average out degree centrality:', average_out_degree(G))  # For directed graph
@@ -58,11 +59,11 @@ def calculate_degree(GF, limit):
     res = []
     nodes = list(GF.nodes())
     for node in nodes:
-        outdeg = nx.degree(node)
-        if outdeg < limit:
+        deg = nx.degree(GF, node)
+        if deg < limit:
             continue
         else:
-            res.append((node, outdeg))
+            res.append((node, deg))
     return res
 
 
@@ -116,22 +117,29 @@ def average_betweennes_centrality(GF):
 def print_top_n_degree_stats(GF, n):
     outdegree = calculate_out_degree(GF, n)
     indegree = calculate_in_degree(GF, n)
+    degree = calculate_degree(GF, n)
 
     outdegree = sort_list(outdegree, True)
     indegree = sort_list(indegree, True)
+    degree = sort_list(degree, True)
 
     print("\n-----Out-degree-----\n")
-    #for node in outdegree:
-        #print(node)
-
+    for node in outdegree:
+        print(node)
 
     print("\n-----In-degree-----\n")
     for node in indegree:
         print(node)
 
+    print("\n-----Degree-----\n")
+    for node in degree:
+        print(node)
+
 
 def func(x, a, b):
-    return a * (x ** -b)
+    return a * (x ** b)
+    # return (a * x) + b
+    #return a * np.exp(-b ** x)
 
 
 # returns a plot that shows the distribution of the list from paramameter
@@ -141,29 +149,36 @@ def is_power_law(GF, degree_list, log):
     dist = {}
     for item in degree_list:
         degree = item[1]
+        #if degree % 2 != 0:
+        #    continue
+        #if degree > 20:
+        #    continue
         if degree in dist:
             dist[degree] += 1
         else:
             dist[degree] = 1
     dist = collections.OrderedDict(sorted(dist.items()))
+
+    #for key, value in dist.items():
+    #    print("degree: ", key, ", count: ", value, "; fraction: ", value / nx.number_of_nodes(GF))
     xdata, ydata = zip(*dist.items())
     ydata = list(map(lambda x: x / nx.number_of_nodes(GF), ydata))
+    xdata = list(map(lambda x: float(x), xdata))
 
-    #popt, pcov = curve_fit(func, xdata, ydata)
-    #plt.plot(xdata, func(xdata, *popt))
-    plt.plot(xdata, ydata)
+    popt, pcov = curve_fit(func, xdata, ydata)
+    ydata_new = list(map(lambda x: func(x, *popt), xdata))
+    print(popt)
+    plt.plot(xdata, ydata_new, 'r-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+    plt.plot(xdata, ydata, label='data')
     plt.xlabel("Degree")
-    plt.ylabel("Rel. Occurence")
+    plt.ylabel("Fraction of users")
     if log:
         plt.yscale("log")
         plt.xscale("log")
+    plt.legend()
     plt.show()
-    # scipy.optimize.curve_fit function with custom power_law function
-    # nx.powerlaw_cluster_graph(n, m p)
 
 
-# print("Graph metrics:")
-# centrality_measures(G)
 # global_properties(G)
 # print_top_n_degree_stats(G, 10)
-is_power_law(G, calculate_in_degree(G, 0), False)
+is_power_law(G, calculate_out_degree(G, 1), True)
