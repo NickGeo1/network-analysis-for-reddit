@@ -10,21 +10,21 @@ path = os.getcwd()
 
 # Read graph from gml file as G
 G = nx.read_gml("../crawler/Graph.gml")
-G_undirected = nx.Graph(G) #undirected version of the graph for some calculations
+G_undirected = nx.Graph(G)  # undirected version of the graph for some calculations
 
 # Adjacency Matrix A
-A = nx.adjacency_matrix(G)
+# A = nx.adjacency_matrix(G)
+# print(A.todense())
 
-#print(A.todense())
 
-#Print all metrics of the graph GF that are implemented in this class and are being requested from task 4
-#Diameter, average path length are being calculated via Gephi
+# Print all metrics of the graph GF that are implemented in this class and are being requested from task 4
+# Diameter, average path length are being calculated via Gephi
 def global_properties(G, G_undirected):
     remove = remove_nodes(G_undirected, False)
-    G_new_undirected = nx.Graph(G_undirected) #undirected graph without nodes that dont have neighbors or have only selfloops
+    G_new_undirected = nx.Graph(G_undirected)  # undirected graph without nodes that dont have neighbors or have only selfloops
     G_new_undirected.remove_nodes_from(remove)
-    #Connected_Graph = G.remove_nodes_from(remove)
-    #nx.write_gml(Connected_Graph, r'Connected_Graph.gml') #Export the directed graphs with the removed nodes
+    # Connected_Graph = G.remove_nodes_from(remove)
+    # nx.write_gml(Connected_Graph, r'Connected_Graph.gml') #Export the directed graphs with the removed nodes
 
     print('number of nodes: ', nx.number_of_nodes(G))
     print('number of edges: ', nx.number_of_edges(G))
@@ -63,7 +63,6 @@ def global_properties(G, G_undirected):
     print('The size of the largest connected component is: ', len(giant_component))
 
     #print('Graph density: ', nx.density(GF))
-
 
 
 # returns a list of nodes that have an in_degree of at least 'limit'
@@ -110,6 +109,7 @@ def sort_list(listToSort, desc):
     listToSort.sort(key=lambda x: x[1], reverse=desc)
     return listToSort
 
+
 # returns the average in-degree and its variance of the graph GF as double
 def average_in_degree_and_variance(GF):
     degree_sum = 0
@@ -131,6 +131,7 @@ def average_out_degree_and_variance(GF):
     variance = np.var([item[1] for item in degree_list])
     return average, variance
 
+
 # returns the average degree of the graph GF as double
 def average_degree(GF):
     degree_sum = 0
@@ -145,6 +146,7 @@ def average_clustering_coefficient(GF):
     cc = nx.average_clustering(GF)
     return cc
 
+
 # returns the average betweenness centrality and its variance of the graph GF as double
 def average_betweennes_centrality_and_variance(GF):
     betweenness_sum = 0;
@@ -155,10 +157,12 @@ def average_betweennes_centrality_and_variance(GF):
     variance = np.var([item for item in bc.values()])
     return average, variance
 
+
 # returns the average closeness centrality and its variance of the graph GF as double
 def average_closeness_centrality_and_variance(GF):
     Clc = nx.closeness_centrality(GF)
     return sum(Clc.values())/len(Clc.values()), np.var([item for item in Clc.values()])
+
 
 def print_top_n_degree_stats(GF, n):
     outdegree = calculate_out_degree(GF, n)
@@ -177,8 +181,12 @@ def print_top_n_degree_stats(GF, n):
     for node in indegree:
         print(node)
 
+    print("\n-----Degree-----\n")
+    for node in degree:
+        print(node)
 
-#returns a list with nodes without neighbours and with only selfloops
+
+# returns a list with nodes without neighbours and with only selfloops
 def remove_nodes(G, directed):
     new_G = nx.Graph(G) if directed else G #make the graph undirected 
     nodes_to_remove = [] #list for nodes to remove
@@ -234,5 +242,5 @@ def is_power_law(GF, degree_list, log):
 # print_top_n_degree_stats(G, 10)
 
 
-#is_power_law(G, calculate_in_degree(G, 0), False)
+# is_power_law(G, calculate_in_degree(G, 0), False)
 global_properties(G, G_undirected)
