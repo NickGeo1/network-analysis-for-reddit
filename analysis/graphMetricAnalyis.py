@@ -4,28 +4,66 @@ import matplotlib.pyplot as plt
 import collections
 import numpy as np
 from scipy.optimize import curve_fit
+import pandas as pd
 
 path = os.getcwd()
 
 # Read graph from gml file as G
 G = nx.read_gml("../crawler/Graph.gml")
+G_undirected = nx.Graph(G) #undirected version of the graph for some calculations
 
 # Adjacency Matrix A
 A = nx.adjacency_matrix(G)
 
+#print(A.todense())
 
-# print all metrics of the graph GF that are implemented in this class
-def global_properties(GF):
-    print('number of nodes: ', nx.number_of_nodes(GF))
-    print('number of edges: ', nx.number_of_edges(GF))
-    # print('diameter', nx.diameter(nx.to_undirected(GF)))
-    print('Average clustering coefficient: ', average_clustering_coefficient(G))
-    print('Average clustering coefficient: ', nx.average_clustering(G))
-    print('Average degree centrality:', average_in_degree(G))  # For directed graph
-    print('Average in degree centrality:', average_in_degree(G))  # For directed graph
-    print('Average out degree centrality:', average_out_degree(G))  # For directed graph
-    print('Average betweenness centrality:',  average_betweennes_centrality(GF))
-    print('Graph density: ', nx.density(GF))
+#Print all metrics of the graph GF that are implemented in this class and are being requested from task 4
+#Diameter, average path length are being calculated via Gephi
+def global_properties(G, G_undirected):
+    remove = remove_nodes(G_undirected, False)
+    G_new_undirected = nx.Graph(G_undirected) #undirected graph without nodes that dont have neighbors or have only selfloops
+    G_new_undirected.remove_nodes_from(remove)
+    #Connected_Graph = G.remove_nodes_from(remove)
+    #nx.write_gml(Connected_Graph, r'Connected_Graph.gml') #Export the directed graphs with the removed nodes
+
+    print('number of nodes: ', nx.number_of_nodes(G))
+    print('number of edges: ', nx.number_of_edges(G))
+
+    print('Average shortest path length between 2 nodes in the graph calculated by Gephi(undirected version): : 5.40834432276679')
+
+    path_len = dict(nx.all_pairs_shortest_path_length(G_new_undirected))
+    list_of_paths_lengths = []
+    for dic in path_len.values():
+        list_of_paths_lengths += [val for val in dic.values() if val != 0]   
+    print('Variance of shortest path lengths between 2 nodes in the graph(undirected version):', np.var(list_of_paths_lengths))
+
+    print('Diameter of the graph(undirected version): ', max(list_of_paths_lengths))
+    print('Diameter of the graph(directed version, calculated by Gephi): 23')
+
+    print('Average clustering coefficient(undirected version): ', average_clustering_coefficient(G_undirected))
+    print('Average clustering coefficient excluding nodes without neighbours and with only selfloops(undirected version): ', average_clustering_coefficient(G_new_undirected))
+
+    print('Average in degree centrality(undirected version) and its variance:', average_in_degree_and_variance(G_undirected))
+    print('Average in degree centrality (excluding nodes without neighbours and with only selfloops, undirected version) and its variance:', average_in_degree_and_variance(G_new_undirected))
+   
+    print('Average out degree centrality(undirected version):', average_out_degree_and_variance(G_undirected))
+    print('Average out degree centrality (excluding nodes without neighbours and with only selfloops, undirected version) and its variance:', average_out_degree_and_variance(G_new_undirected))
+    
+    print('Average betweenness centrality(undirected version) and its variance:',  average_betweennes_centrality_and_variance(G_undirected))
+    print('Average betweenness centrality (excluding nodes without neighbours and with only selfloops, undirected version) and its variance:',  average_betweennes_centrality_and_variance(G_new_undirected))
+ 
+    print('Average closeness centrality(undirected version) and its variance:',  average_closeness_centrality_and_variance(G_undirected))
+    print('Average closeness centrality (excluding nodes without neighbours and with only selfloops,undirected version) and its variance:',  average_closeness_centrality_and_variance(G_new_undirected))
+   
+    giant_component = max(nx.connected_components(G_undirected), key=len)
+    giant_component_subgraph = G_undirected.subgraph(giant_component).copy()
+    #nx.write_gml(giant_component_subgraph, r'Giant_component_subgraph.gml') #Export the component subgraph 
+
+    #print('The set of nodes of the largest connected component of the graph is(undirected version): ', giant_component)
+    print('The size of the largest connected component is: ', len(giant_component))
+
+    #print('Graph density: ', nx.density(GF))
+
 
 
 # returns a list of nodes that have an in_degree of at least 'limit'
@@ -72,23 +110,26 @@ def sort_list(listToSort, desc):
     listToSort.sort(key=lambda x: x[1], reverse=desc)
     return listToSort
 
-
-# returns the average in-degree of the graph GF as double
-def average_in_degree(GF):
+# returns the average in-degree and its variance of the graph GF as double
+def average_in_degree_and_variance(GF):
     degree_sum = 0
     degree_list = calculate_in_degree(GF, 0)
     for item in degree_list:
         degree_sum += item[1]
-    return degree_sum / nx.number_of_nodes(GF)
+    average = degree_sum / nx.number_of_nodes(GF)
+    variance = np.var([item[1] for item in degree_list])
+    return average, variance
 
 
-# returns the average out-degree of the graph GF as double
-def average_out_degree(GF):
+# returns the average out-degree and its variance of the graph GF as double
+def average_out_degree_and_variance(GF):
     degree_sum = 0
     degree_list = calculate_out_degree(GF, 0)
     for item in degree_list:
         degree_sum += item[1]
-    return degree_sum / nx.number_of_nodes(GF)
+    average = degree_sum / nx.number_of_nodes(GF)
+    variance = np.var([item[1] for item in degree_list])
+    return average, variance
 
 # returns the average degree of the graph GF as double
 def average_degree(GF):
@@ -99,20 +140,25 @@ def average_degree(GF):
     return degree_sum / nx.number_of_nodes(GF)
 
 
-# returns the clustering coefficient of the graph GF as double
+# returns the average clustering coefficient and its variance of the graph GF as double
 def average_clustering_coefficient(GF):
     cc = nx.average_clustering(GF)
     return cc
 
-
-# returns the average betweenness centrality of the graph GF as double
-def average_betweennes_centrality(GF):
+# returns the average betweenness centrality and its variance of the graph GF as double
+def average_betweennes_centrality_and_variance(GF):
     betweenness_sum = 0;
     bc = nx.betweenness_centrality(GF)
     for key, value in bc.items():
         betweenness_sum += value
-    return betweenness_sum / nx.number_of_nodes(GF)
+    average = betweenness_sum / nx.number_of_nodes(GF)
+    variance = np.var([item for item in bc.values()])
+    return average, variance
 
+# returns the average closeness centrality and its variance of the graph GF as double
+def average_closeness_centrality_and_variance(GF):
+    Clc = nx.closeness_centrality(GF)
+    return sum(Clc.values())/len(Clc.values()), np.var([item for item in Clc.values()])
 
 def print_top_n_degree_stats(GF, n):
     outdegree = calculate_out_degree(GF, n)
@@ -131,16 +177,21 @@ def print_top_n_degree_stats(GF, n):
     for node in indegree:
         print(node)
 
-    print("\n-----Degree-----\n")
-    for node in degree:
-        print(node)
+
+#returns a list with nodes without neighbours and with only selfloops
+def remove_nodes(G, directed):
+    new_G = nx.Graph(G) if directed else G #make the graph undirected 
+    nodes_to_remove = [] #list for nodes to remove
+    for node in new_G:
+        if new_G[node] == {} or list(new_G[node].keys()) == [node]: #if node has not neighbors or only a selfloop
+            nodes_to_remove.append(node)
+    return nodes_to_remove
 
 
 def func(x, a, b):
     return a * (x ** b)
     # return (a * x) + b
     #return a * np.exp(-b ** x)
-
 
 # returns a plot that shows the distribution of the list from paramameter
 # degree_list needs to have lists as items, whereas the second item is relevant for plotting
@@ -181,4 +232,7 @@ def is_power_law(GF, degree_list, log):
 
 # global_properties(G)
 # print_top_n_degree_stats(G, 10)
-is_power_law(G, calculate_out_degree(G, 1), True)
+
+
+#is_power_law(G, calculate_in_degree(G, 0), False)
+global_properties(G, G_undirected)
