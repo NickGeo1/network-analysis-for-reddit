@@ -1,10 +1,16 @@
-from matplotlib.axis import Axis
 import matplotlib  
-import matplotlib.pyplot as plt  
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 import networkx as nx
 from datetime import date
 import datetime
+import os
+import sys
+cwd = os.getcwd()
+path = cwd+"/../analysis"
+sys.path.insert(0, path)
+from graphMetricAnalyis import is_power_law
        
 graph = nx.read_gml("Graph.gml")
 #Dates of creation of each of the top5 posts (starting from top1)
@@ -43,21 +49,33 @@ def plot_comments_per_day(post_created_at, comment_date_list, title, color):
 
     comments_count = [comment_date_list.count(d) for d in plot_days] #Get the ammount of comments in each day
 
-    #Make the plot
-    plot = plt.figure()
+    #Make 3 plots in the same window
+
+    #Bar plot representing comments per day
+    fig = plt.figure(constrained_layout=True)
+    gs = GridSpec(8, 8, figure=fig)
+    fig.add_subplot(gs[:4, :4])
     plt.bar(plot_days, comments_count, color = color)    
     for i in range(len(plot_days)):
         plt.text(i, comments_count[i]//2, comments_count[i], ha = 'center', fontweight = 'bold', fontsize = 8)
     plt.title(title, fontsize=14, fontweight = 'bold', color = color)
     plt.xlabel('Days', fontsize=14, fontweight = 'bold')
     plt.ylabel('Comments', fontsize=14, fontweight = 'bold')
-    plt.xticks(range(plot_days_count+1), plot_days, rotation = 90, fontsize = 8)
+    plt.xticks(rotation = 90, fontsize = 8)
     plt.grid(True)
+
+    #Function plot representing comments per day
+    dates_counts = (plot_days, comments_count)
+    fig.add_subplot(gs[:4, 4:])
+    is_power_law(None, dates_counts, False, title, 'Days', 'Comments', color, False)
+
+    #Function plot representing comments per day in log scale(trying to check if power law fits)
+    fig.add_subplot(gs[4:, 2:6])
+    is_power_law(None, dates_counts, True, title+" LOG SCALE", 'Days', 'Comments', color, False)
 
 #Here, we use this function to run the plot for the whole data.
 plot_comments_per_day(min(top_5_posts_created), all_dates_list, "TOTAL COMMENTS PER DAY FOR TOP 5 POSTS", 'orange')
 #Here, we use this function to run the plot for every group of data.
 for post_date, date_list, i, color in zip(top_5_posts_created, date_groups, list(range(len(top_5_posts_created))), submission_colors):
     plot_comments_per_day(post_date, date_list, f"COMMENTS PER DAY FOR TOP {i+1} POST", color)
-
 plt.show()

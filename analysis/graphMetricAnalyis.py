@@ -65,7 +65,7 @@ def global_properties(G, G_undirected):
     #print('Graph density: ', nx.density(GF))
 
 
-# returns a list of nodes that have an in_degree of at least 'limit'
+# returns a list of tuples, each tuple containing the node and the in-degree of at least 'limit'
 def calculate_in_degree(GF, limit):
     res = []
     nodes = list(GF.nodes())
@@ -78,7 +78,7 @@ def calculate_in_degree(GF, limit):
     return res
 
 
-# returns a list of nodes that have an out_degree of at least 'limit'
+# returns a list of tuples, each tuple containing the node and the out-degree of at least 'limit'
 def calculate_out_degree(GF, limit):
     res = []
     nodes = list(GF.nodes())
@@ -91,7 +91,7 @@ def calculate_out_degree(GF, limit):
     return res
 
 
-# returns a list of nodes that have an degree of at least 'limit'
+# returns a list of tuples, each tuple containing the node and the degree of at least 'limit'
 def calculate_degree(GF, limit):
     res = []
     nodes = list(GF.nodes())
@@ -102,7 +102,6 @@ def calculate_degree(GF, limit):
         else:
             res.append((node, deg))
     return res
-
 
 # sorts a list and returns it, if desc=true, it will be sorted descending, otherwise ascending
 def sort_list(listToSort, desc):
@@ -197,50 +196,114 @@ def remove_nodes(G, directed):
 
 
 def func(x, a, b):
-    return a * (x ** b)
+    return a * (x ** (-b))
     # return (a * x) + b
     #return a * np.exp(-b ** x)
 
-# returns a plot that shows the distribution of the list from paramameter
-# degree_list needs to have lists as items, whereas the second item is relevant for plotting
+# returns the age of popularity of one user. Practicaly this is how many days that user
+# got replies since the first day he made the comment
+#def calculate_comment_age(G, user_node):
+
+
+# shows a plot that shows the distribution of the list from paramameter
+# data_list is either: 
+# -a list of tuples, each tuple containing the name of a user and his in/out degree
+# -a tuple with two lists, where the first list contains dates and the second list how many comments made at the corresponding date of first list
 # in logartihmic scale: log = True
-def is_power_law(GF, degree_list, log):
-    dist = {}
-    for item in degree_list:
-        degree = item[1]
-        #if degree % 2 != 0:
-        #    continue
-        #if degree > 20:
-        #    continue
-        if degree in dist:
-            dist[degree] += 1
+def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
+
+    #If we want the degree distribution, we are making a dictionary with the degrees as keys 
+    #and how many nodes with that degree as values
+    if xlabel.endswith('Degree'): 
+        dist = {}
+        for item in data_list:
+            degree = item[1]
+            #if degree % 2 != 0:
+            #    continue
+            #if degree > 20:
+            #    continue
+            if degree in dist:
+                dist[degree] += 1
+            else:
+                dist[degree] = 1
+        dist = collections.OrderedDict(sorted(dist.items())) #sort the dictionary
+
+        #for key, value in dist.items():
+        #    print("degree: ", key, ", count: ", value, "; fraction: ", value / nx.number_of_nodes(GF))
+        xdata, ydata = zip(*dist.items())  #xdata = list of degrees, ydata = list of how many nodes with that degree
+    
+        xdata = list(map(lambda x: float(x), xdata)) #make xdata floats
+        ydata = list(map(lambda x: x / nx.number_of_nodes(GF), ydata)) #normalize the amount of nodes with degreee k in [0,1]
+        popt, pcov = curve_fit(func, xdata, ydata) #Find a,b such that we can fit a function to our data popt=(a,b)
+        ydata_new = list(map(lambda x: func(x, *popt), xdata)) #Calculate the y of the above found function
+
+    #In this case we want to plot comments per day. Our x data now is dates, so in order
+    #to find a function that fits our data function, we have to consider these dates as numbers. In linear scale, dates
+    #are 1,2,3,4,...,len(xdata) and in log scale 1,10,100,...,10^(len(xdata)-1)
+    else:
+        xdata, ydata = data_list[0], data_list[1]
+        if log:
+            #We have to check and remove if some dates have 0 comments. These y values mess up our
+            #log scale plot
+            x_y_to_remove = []
+            x_y = list(zip(xdata, ydata))
+            for xy in x_y:
+                if xy[1] == 0:
+                    x_y_to_remove.append(xy)
+            for xy in x_y_to_remove:
+                x_y.remove(xy)
+            xdata, ydata = zip(*x_y)
+            #these numbers are going to override the dates in order to find the fit function (log scale)
+            xdata_nums = [10**x for x in range(len(xdata))]
         else:
-            dist[degree] = 1
-    dist = collections.OrderedDict(sorted(dist.items()))
-
-    #for key, value in dist.items():
-    #    print("degree: ", key, ", count: ", value, "; fraction: ", value / nx.number_of_nodes(GF))
-    xdata, ydata = zip(*dist.items())
-    ydata = list(map(lambda x: x / nx.number_of_nodes(GF), ydata))
-    xdata = list(map(lambda x: float(x), xdata))
-
-    popt, pcov = curve_fit(func, xdata, ydata)
-    ydata_new = list(map(lambda x: func(x, *popt), xdata))
+            #these numbers are going to override the dates in order to find the fit function
+            xdata_nums = [x+1 for x in range(len(xdata))]
+        popt, pcov = curve_fit(func, xdata_nums, ydata)
+        ydata_new = list(map(lambda x: func(x, *popt), xdata_nums))
+        plt.xticks(rotation = 90, fontsize = 8) #rotate date labels by 90 degrees
+    
     print(popt)
-    plt.plot(xdata, ydata_new, 'r-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
-    plt.plot(xdata, ydata, label='data')
-    plt.xlabel("Degree")
-    plt.ylabel("Fraction of users")
-    if log:
+    plt.title(title, fontsize=14, fontweight = 'bold', color = color)
+
+    #If we want to plot log scale of comments per day, we make a plot
+    #with x values from 1 through 10^(len(xdata)-1) and then we replace
+    #each 10^n value with the dates
+    if log and xlabel == "Days":
         plt.yscale("log")
         plt.xscale("log")
+        plt.plot([float(10**x) for x in range(len(xdata))], ydata, color, label='data') #data
+        plt.plot([float(10**x) for x in range(len(xdata))], ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt)) #function that fits best
+        plt.xticks([float(10**x) for x in range(len(xdata))], xdata) #replace numbers with labels
+    #If we want to plot log scale of degree distribution, we just plot the x and
+    #the corresponding y data where x is a list of degrees and y the corresponding fraction of
+    #users with that degree
+    elif log and xlabel.endswith('Degree'):
+        plt.yscale("log")
+        plt.xscale("log")
+        plt.plot(xdata, ydata, color, label='data')
+        plt.plot(xdata, ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+    #In case of linear scale: 
+    #-dates in xdata fit with the corresponding comments in ydata
+    #-degrees in xdata fit with the corresponding user fractions in ydata
+    elif not log:
+        plt.plot(xdata, ydata, color, label='data')
+        plt.plot(xdata, ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+
+    plt.xlabel(xlabel, fontsize=14, fontweight = 'bold')
+    plt.ylabel(ylabel, fontsize=14, fontweight = 'bold')       
     plt.legend()
-    plt.show()
+
+    if plot:
+        plt.show()
 
 
 # global_properties(G)
 # print_top_n_degree_stats(G, 10)
 
+if __name__ == "__main__":
+    is_power_law(G, calculate_in_degree(G, 0), False, "In degree centrality distribution", "In Degree", "Fraction of users", "b")
+    is_power_law(G, calculate_in_degree(G, 0), True, "In degree centrality distribution", "In Degree", "Fraction of users","b")
+    is_power_law(G, calculate_out_degree(G, 0), False, "Out degree centrality distribution", "Out Degree", "Fraction of users","b")
+    is_power_law(G, calculate_out_degree(G, 0), True, "Out degree centrality distribution", "Out Degree", "Fraction of users","b")
 
-# is_power_law(G, calculate_in_degree(G, 0), False)
-global_properties(G, G_undirected)
+#global_properties(G, G_undirected)
