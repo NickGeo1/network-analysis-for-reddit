@@ -253,11 +253,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
             for xy in x_y_to_remove:
                 x_y.remove(xy)
             xdata, ydata = zip(*x_y)
-            #these numbers are going to override the dates in order to find the fit function (log scale)
-            xdata_nums = [10**x for x in range(len(xdata))]
-        else:
-            #these numbers are going to override the dates in order to find the fit function
-            xdata_nums = [x+1 for x in range(len(xdata))]
+        xdata_nums = [x+1 for x in range(len(xdata))]
         popt, pcov = curve_fit(func, xdata_nums, ydata)
         ydata_new = list(map(lambda x: func(x, *popt), xdata_nums))
         plt.xticks(rotation = 90, fontsize = 8) #rotate date labels by 90 degrees
@@ -272,7 +268,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         plt.yscale("log")
         plt.xscale("log")
         plt.plot([float(10**x) for x in range(len(xdata))], ydata, color, label='data') #data
-        plt.plot([float(10**x) for x in range(len(xdata))], ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt)) #function that fits best
+        plt.plot([float(10**x) for x in range(len(xdata))], ydata_new, 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt)) #function that fits best
         plt.xticks([float(10**x) for x in range(len(xdata))], xdata) #replace numbers with labels
     #If we want to plot log scale of degree distribution, we just plot the x and
     #the corresponding y data where x is a list of degrees and y the corresponding fraction of
@@ -281,13 +277,13 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         plt.yscale("log")
         plt.xscale("log")
         plt.plot(xdata, ydata, color, label='data')
-        plt.plot(xdata, ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+        plt.plot(xdata, ydata_new, 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
     #In case of linear scale: 
     #-dates in xdata fit with the corresponding comments in ydata
     #-degrees in xdata fit with the corresponding user fractions in ydata
     elif not log:
         plt.plot(xdata, ydata, color, label='data')
-        plt.plot(xdata, ydata_new, 'k-',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
+        plt.plot(xdata, ydata_new, 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
 
     plt.xlabel(xlabel, fontsize=14, fontweight = 'bold')
     plt.ylabel(ylabel, fontsize=14, fontweight = 'bold')       
