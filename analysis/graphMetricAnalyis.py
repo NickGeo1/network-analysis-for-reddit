@@ -239,7 +239,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
 
     #In this case we want to plot comments per day. Our x data now is dates, so in order
     #to find a function that fits our data function, we have to consider these dates as numbers. In linear scale, dates
-    #are 1,2,3,4,...,len(xdata) and in log scale 1,10,100,...,10^(len(xdata)-1)
+    #are 0,1,2,3,4,...,len(xdata)-1 and in log scale 1,10,100,...,10^(len(xdata)-1)
     else:
         xdata, ydata = data_list[0], data_list[1]
         if log:
@@ -253,7 +253,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
             for xy in x_y_to_remove:
                 x_y.remove(xy)
             xdata, ydata = zip(*x_y)
-        xdata_nums = [x+1 for x in range(len(xdata))]
+        xdata_nums = [x+1 for x in range(len(xdata))] #we start fiting the function from f(1) because f(0) does not apply
         popt, pcov = curve_fit(func, xdata_nums, ydata)
         ydata_new = list(map(lambda x: func(x, *popt), xdata_nums))
         plt.xticks(rotation = 90, fontsize = 8) #rotate date labels by 90 degrees
