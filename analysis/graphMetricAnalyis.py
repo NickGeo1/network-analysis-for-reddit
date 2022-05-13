@@ -239,7 +239,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
 
     #In this case we want to plot comments per day. Our x data now is dates, so in order
     #to find a function that fits our data function, we have to consider these dates as numbers. In linear scale, dates
-    #are 0,1,2,3,4,...,len(xdata)-1 and in log scale 1,10,100,...,10^(len(xdata)-1)
+    #are 0,1,2,3,4,...,len(xdata)-1 and in log scale we dont scale x-axis so labels will have the same numbers
     else:
         xdata, ydata = data_list[0], data_list[1]
         if log:
@@ -261,16 +261,12 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
     print(popt)
     plt.title(title, fontsize=14, fontweight = 'bold', color = color)
 
-    #If we want to plot log scale of comments per day, we make a plot
-    #with x values from 1 through 10^(len(xdata)-1) and then we replace
-    #each 10^n value with the dates
     if log and xlabel == "Days":
         plt.yscale("log")
-        plt.xscale("log")
-        plt.plot([float(10**x) for x in range(len(xdata))], ydata, color, label='data') #data
-        #We are trying to make an approximate fit line scaled to log scale
-        plt.plot([1, 10**(len(xdata)-1)], [ydata_new[0], ydata_new[-1]], 'k--',  label='approximate fit: a=%5.3f, b=%5.3f' % tuple(popt))
-        plt.xticks([float(10**x) for x in range(len(xdata))], xdata) #replace numbers with labels
+        plt.plot([float(x+1) for x in range(len(xdata))], ydata, color, label='data') #data
+        #The fit function is not going to be a line in log scale. We consider the curve that occurs, as a fitting function
+        plt.plot([float(x+1) for x in range(len(xdata))], ydata_new, 'k--',  label='approximate fit: a=%5.3f, b=%5.3f' % tuple(popt))
+        plt.xticks([float(x+1) for x in range(len(xdata))], xdata) #replace numbers with labels
     #If we want to plot log scale of degree distribution, we just plot the x and
     #the corresponding y data where x is a list of degrees and y the corresponding fraction of
     #users with that degree
