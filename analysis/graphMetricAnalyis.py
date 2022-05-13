@@ -268,7 +268,9 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         plt.yscale("log")
         plt.xscale("log")
         plt.plot([float(10**x) for x in range(len(xdata))], ydata, color, label='data') #data
-        plt.plot([float(10**x) for x in range(len(xdata))], ydata_new, 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt)) #function that fits best
+        #function that fits best in log scale is a line. We need to extend the line from the interval of [1,len(xdata)]
+        #to the interval of [1, 10^(len(data)-1)]
+        plt.plot([1, 10**(len(xdata)-1)], [ydata_new[0], ydata_new[-1]], 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt))
         plt.xticks([float(10**x) for x in range(len(xdata))], xdata) #replace numbers with labels
     #If we want to plot log scale of degree distribution, we just plot the x and
     #the corresponding y data where x is a list of degrees and y the corresponding fraction of
