@@ -197,8 +197,6 @@ def remove_nodes(G, directed):
 
 def func(x, a, b):
     return a * (x ** (-b))
-    # return (a * x) + b
-    #return a * np.exp(-b ** x)
 
 # returns the age of popularity of one user. Practicaly this is how many days that user
 # got replies since the first day he made the comment
@@ -218,18 +216,12 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         dist = {}
         for item in data_list:
             degree = item[1]
-            #if degree % 2 != 0:
-            #    continue
-            #if degree > 20:
-            #    continue
             if degree in dist:
                 dist[degree] += 1
             else:
                 dist[degree] = 1
         dist = collections.OrderedDict(sorted(dist.items())) #sort the dictionary
 
-        #for key, value in dist.items():
-        #    print("degree: ", key, ", count: ", value, "; fraction: ", value / nx.number_of_nodes(GF))
         xdata, ydata = zip(*dist.items())  #xdata = list of degrees, ydata = list of how many nodes with that degree
     
         xdata = list(map(lambda x: float(x), xdata)) #make xdata floats
@@ -238,8 +230,8 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         ydata_new = list(map(lambda x: func(x, *popt), xdata)) #Calculate the y of the above found function
 
     #In this case we want to plot comments per day. Our x data now is dates, so in order
-    #to find a function that fits our data function, we have to consider these dates as numbers. In linear scale, dates
-    #are 0,1,2,3,4,...,len(xdata)-1 and in log scale we dont scale x-axis so labels will have the same numbers
+    #to find a function that fits our data function, we have to consider these dates as numbers. In linear and log scale scale, dates
+    #are 0,1,2,3,4,...,len(xdata)-1
     else:
         xdata, ydata = data_list[0], data_list[1]
         if log:
@@ -260,13 +252,14 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
     
     print(popt)
     plt.title(title, fontsize=14, fontweight = 'bold', color = color)
-
+    #If we want to plot the log scale of comments per day, we first making a plot from 1 to len(xdata) where xdata:list of dates.
+    #Then we plot the log scale fiting function and we replace the numbers with the dates
     if log and xlabel == "Days":
         plt.yscale("log")
-        plt.plot([float(x+1) for x in range(len(xdata))], ydata, color, label='data') #data
-        #The fit function is not going to be a line in log scale. We consider the curve that occurs, as a fitting function
-        plt.plot([float(x+1) for x in range(len(xdata))], ydata_new, 'k--',  label='approximate fit: a=%5.3f, b=%5.3f' % tuple(popt))
-        plt.xticks([float(x+1) for x in range(len(xdata))], xdata) #replace numbers with labels
+        plt.xscale("log")
+        plt.plot(xdata_nums, ydata, color, label='data') #data
+        plt.plot(xdata_nums, ydata_new, 'k--',  label='approximate fit: a=%5.3f, b=%5.3f' % tuple(popt)) #fiting function
+        plt.xticks(xdata_nums, xdata) #replace numbers with date labels
     #If we want to plot log scale of degree distribution, we just plot the x and
     #the corresponding y data where x is a list of degrees and y the corresponding fraction of
     #users with that degree
