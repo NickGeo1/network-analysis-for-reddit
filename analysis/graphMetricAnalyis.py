@@ -198,11 +198,6 @@ def remove_nodes(G, directed):
 def func(x, a, b):
     return a * (x ** (-b))
 
-# returns the age of popularity of one user. Practicaly this is how many days that user
-# got replies since the first day he made the comment
-#def calculate_comment_age(G, user_node):
-
-
 # shows a plot that shows the distribution of the list from paramameter
 # data_list is either: 
 # -a list of tuples, each tuple containing the name of a user and his in/out degree
@@ -258,7 +253,7 @@ def is_power_law(GF, data_list, log, title, xlabel, ylabel, color, plot = True):
         plt.yscale("log")
         plt.xscale("log")
         plt.plot(xdata_nums, ydata, color, label='data') #data
-        plt.plot(xdata_nums, ydata_new, 'k--',  label='approximate fit: a=%5.3f, b=%5.3f' % tuple(popt)) #fiting function
+        plt.plot(xdata_nums, ydata_new, 'k--',  label='fit: a=%5.3f, b=%5.3f' % tuple(popt)) #fiting function
         plt.xticks(xdata_nums, xdata) #replace numbers with date labels
     #If we want to plot log scale of degree distribution, we just plot the x and
     #the corresponding y data where x is a list of degrees and y the corresponding fraction of
