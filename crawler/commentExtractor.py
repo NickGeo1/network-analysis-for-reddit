@@ -38,7 +38,7 @@ class STNode:
         # print(self.val)
         for subtree in self.node_list:
             subtree.preorder_output()
-        return [self.val, self.node_list]
+        return [self.val, self.node_list] #-> example [1 ,[[2,[5,6]],3,4]]
 
 
 '''
@@ -61,13 +61,13 @@ def make_forest(post):
     forest = []
     counter = 2
     post.comments.replace_more(limit=None)  # replace all MoreComments objects with the actual comments
-    for comment in post.comments:
-        if counter < 1:
-            continue
+    for comment in post.comments[:counter]:
+        #if counter < 1:
+            #break
         if comment.author is None:  # If comment is deleted author = none
             continue
         forest.append(make_tree(comment))
-        counter -= 1
+        #counter -= 1
     return forest
 
 
